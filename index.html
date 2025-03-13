@@ -4,14 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZestyTS - Official Page</title>
-    <link rel="icon" href="/UWUVCI_LOGO.ico" />
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/1396621" />
+    <meta name="description" content="Official website for Zesty Fernandez (ZestyTS) - Developer of MisAdventures of Xenos and UWUVCI projects.">
+    <meta property="og:title" content="ZestyTS - Official Page">
+    <meta property="og:description" content="Learn more about Zesty Fernandez (ZestyTS), his projects, and how to contact him.">
+    <meta property="og:image" content="https://avatars.githubusercontent.com/u/1396621">
+    <meta property="og:url" content="https://zestyts.github.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ZestyTS - Official Page">
+    <meta name="twitter:description" content="Learn more about Zesty Fernandez (ZestyTS), his projects, and how to contact him.">
+    <meta name="twitter:image" content="https://avatars.githubusercontent.com/u/1396621">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        html, body {
+            height: 100%;
             margin: 0;
-            padding: 0;
-            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(to bottom, #000, #111);
             color: white;
+            font-family: Arial, sans-serif;
             text-align: center;
         }
         header {
@@ -19,6 +31,15 @@
             padding: 20px;
             font-size: 24px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
         }
         nav {
             display: flex;
@@ -32,76 +53,85 @@
             color: #00bfff;
             font-size: 18px;
             font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active {
+            color: #ffcc00;
         }
         .container {
-            margin: 50px auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             max-width: 800px;
-            background: #111;
+            background: rgba(17, 17, 17, 0.9);
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            margin: auto;
         }
-        img.profile-pic {
-            width: 120px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-        }
-        h2, h3 {
+        .social-icons a {
+            margin: 0 10px;
+            text-decoration: none;
             color: #00bfff;
+            font-size: 24px;
+            transition: color 0.3s;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            margin: 10px 0;
+        .social-icons a:hover {
+            color: #ffcc00;
         }
         footer {
-            margin-top: 20px;
-            padding: 15px;
             background-color: #222;
             color: white;
             font-size: 14px;
+            padding: 15px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <header>
-        Welcome to Zesty Fernandez's Official Page
-    </header>
-    
-    <nav>
-        <a href="https://github.com/ZestyTS" target="_blank">GitHub</a>
-        <a href="https://ko-fi.com/zestyts" target="_blank">Ko-fi</a>
-        <a href="http://uwuvci.net" target="_blank">UWUVCI</a>
-    </nav>
-    
-    <div class="container">
-        <img src="https://avatars.githubusercontent.com/u/1396621" alt="ZestyTS Profile Picture" class="profile-pic">
-        <h2>About Me</h2>
-        <p>Hi, my name is Zesty Fernandez (ZestyTS). If you need support for something of mine that you paid for, please email me with the name of the product in the subject followed by "Support" and describe your issue. I will get back to you as soon as possible. You can also reach out for business inquiries.</p>
+    <div id="app">
+        <header>
+            <img src="https://avatars.githubusercontent.com/u/1396621" alt="ZestyTS">
+            Welcome to Zesty Fernandez's Official Page
+        </header>
         
-        <h2>My Projects</h2>
+        <nav>
+            <a @click="setPage('home')" :class="{ active: page === 'home' }">Home</a>
+            <a @click="setPage('misadventures')" :class="{ active: page === 'misadventures' }">MisAdventures of Xenos</a>
+            <a @click="setPage('uwuvci')" :class="{ active: page === 'uwuvci' }">UWUVCI</a>
+        </nav>
         
-        <h3>The MisAdventures of Xenos</h3>
-        <ul>
-            <li><a href="https://www.youtube.com/watch?v=RcfVhFi3wJc" target="_blank">Trailer</a></li>
-            <li><a href="https://apps.apple.com/us/app/the-misadventures-of-xenos/id6446100056" target="_blank">App Store (iOS)</a></li>
-            <li><a href="https://play.google.com/store/apps/details?id=com.zestyts.misadventuresofxenos&hl=en-US" target="_blank">Google Play</a></li>
-            <li><a href="https://store.steampowered.com/app/2285000/The_MisAdventures_of_Xenos/" target="_blank">Steam</a></li>
-            <li><a href="https://apps.microsoft.com/detail/9n4f89mkljk6" target="_blank">Microsoft Store</a></li>
-        </ul>
+        <div class="container" v-if="page === 'home'">
+            <h2>About Me</h2>
+            <p>Hi, my name is Zesty Fernandez (ZestyTS). If you need support for something of mine that you paid for, please email me with the name of the product in the subject followed by "Support" and describe your issue. I will get back to you as soon as possible. You can also reach out for business inquiries.</p>
+        </div>
         
-        <h3>UWUVCI Projects</h3>
-        <ul>
-            <li><a href="http://uwuvci.net" target="_blank">UWUVCI Website</a></li>
-            <li><a href="https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF" target="_blank">UWUVCI AIO WPF</a></li>
-            <li><a href="https://github.com/ZestyTS/UWUVCI-V3-Helper" target="_blank">UWUVCI V3 Helper</a></li>
-        </ul>
+        <footer>
+            <p>&copy; 2025 Zesty Fernandez | <a href="mailto:your-email@example.com">Contact Me</a></p>
+            <div class="social-icons">
+                <a href="https://twitter.com/ZestyTS" target="_blank">🐦 Twitter</a>
+                <a href="https://www.linkedin.com/in/zesty-fernandez/" target="_blank">🔗 LinkedIn</a>
+            </div>
+        </footer>
     </div>
     
-    <footer>
-        &copy; 2025 Zesty Fernandez | <a href="mailto:your-email@example.com">Contact Me</a>
-    </footer>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    page: 'home'
+                };
+            },
+            methods: {
+                setPage(newPage) {
+                    this.page = newPage;
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
 </body>
 </html>
