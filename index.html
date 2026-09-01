@@ -1,152 +1,119 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZestyTS - Official Page</title>
-    <link rel="icon" href="https://avatars.githubusercontent.com/u/1396621" />
-    <meta name="description" content="Official website for Zesty Fernandez (ZestyTS) - Developer of MisAdventures of Xenos and UWUVCI projects.">
-    <meta property="og:title" content="ZestyTS - Official Page">
-    <meta property="og:description" content="Learn more about Zesty Fernandez (ZestyTS), his projects, and how to contact him.">
-    <meta property="og:image" content="https://avatars.githubusercontent.com/u/1396621">
-    <meta property="og:url" content="https://zestyts.github.io">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ZestyTS - Official Page">
-    <meta name="twitter:description" content="Learn more about Zesty Fernandez (ZestyTS), his projects, and how to contact him.">
-    <meta name="twitter:image" content="https://avatars.githubusercontent.com/u/1396621">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(to bottom, #000, #111);
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #222;
-            padding: 15px;
-        }
-        nav a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: #00bfff;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        nav a:hover, nav a.active {
-            color: #ffcc00;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            max-width: 800px;
-            background: rgba(17, 17, 17, 0.9);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-            margin: auto;
-        }
-        .container a {
-            color: #00bfff;
-            text-decoration: none;
-        }
-        .container a:hover {
-            color: #ffcc00;
-        }
-        .social-icons a {
-            margin: 0 10px;
-            text-decoration: none;
-            color: #00bfff;
-            font-size: 24px;
-            transition: color 0.3s;
-        }
-        .social-icons a:hover {
-            color: #ffcc00;
-        }
-        footer {
-            background-color: #222;
-            color: white;
-            font-size: 14px;
-            padding: 15px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c10">
+  <meta name="description" content="Official website for Zesty Fernandez (ZestyTS), developer of UInjectForge and The MisAdventures of Xenos.">
+  <meta property="og:title" content="ZestyTS | Software and game development">
+  <meta property="og:description" content="UInjectForge, The MisAdventures of Xenos, release information, support, and privacy policies.">
+  <meta property="og:image" content="https://zestyts.github.io/assets/uinjectforge-feature.png">
+  <meta property="og:url" content="https://zestyts.github.io/">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>ZestyTS | Software and game development</title>
+  <link rel="icon" href="assets/uinjectforge-icon.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <nav>
-            <a @click="setPage('home')" :class="{ active: page === 'home' }">Home</a>
-            <a @click="setPage('misadventures')" :class="{ active: page === 'misadventures' }">MisAdventures of Xenos</a>
-            <a @click="setPage('uwuvci')" :class="{ active: page === 'uwuvci' }">UWUVCI</a>
-        </nav>
-        
-        <div class="container" v-if="page === 'home'">
-            <img src="https://avatars.githubusercontent.com/u/1396621" alt="ZestyTS" style="width: 200px; border-radius: 10px;">
-            <h2>About Me</h2>
-            <p>Hi, my name is Zesty Fernandez (ZestyTS). I am the developer of <strong>The MisAdventures of Xenos</strong>, an action RPG adventure available on multiple platforms. I also manage the development of <strong>UWUVCI V3</strong>, a Wii U Virtual Console injections tool. Additionally, I run a YouTube channel called <a href="https://www.youtube.com/@ZestysCorner" target="_blank">Zesty's Corner</a>, where I share content about technology, gaming, and development.</p>
-            <p>If you need support for something of mine that you paid for, please email me at <a href="mailto:ZestyTS@gmail.com">ZestyTS@gmail.com</a> with the name of the product in the subject followed by "Support" and describe your issue. I will get back to you as soon as possible. Feel free to reach out for business inquiries.</p>
+  <header class="site-header">
+    <nav class="nav-shell" aria-label="Primary navigation">
+      <a class="site-name" href="./">ZestyTS</a>
+      <div class="nav-links">
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <a href="privacy/">Privacy</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-inner">
+        <img class="profile-image" src="https://avatars.githubusercontent.com/u/1396621" alt="ZestyTS profile image" width="112" height="112">
+        <p class="eyebrow">Independent developer</p>
+        <h1 id="page-title">Zesty Fernandez <span>(ZestyTS)</span></h1>
+        <p class="hero-copy">I build practical software for game preservation workflows and create independent games across desktop and mobile platforms.</p>
+        <div class="button-row">
+          <a class="button button-primary" href="#projects">View projects</a>
+          <a class="button button-secondary" href="mailto:ZestyTS@gmail.com">Email support</a>
         </div>
-        
-        <div class="container" v-if="page === 'misadventures'">
-            <h2>The MisAdventures of Xenos</h2>
-            <p>An action RPG adventure available on multiple platforms.</p>
-            <div>
-                <a href="https://www.youtube.com/watch?v=RcfVhFi3wJc" target="_blank">Trailer</a><br/>
-                <a href="https://store.steampowered.com/app/2285000/The_MisAdventures_of_Xenos/" target="_blank">Steam</a><br/>
-                <a href="https://apps.apple.com/us/app/the-misadventures-of-xenos/id6446100056" target="_blank">App Store (iOS)</a><br/>
-                <a href="https://play.google.com/store/apps/details?id=com.zestyts.misadventuresofxenos&hl=en-US" target="_blank">Google Play</a><br/>
-                <a href="https://apps.microsoft.com/detail/9n4f89mkljk6" target="_blank">Microsoft Store</a>
-            </div>
+      </div>
+    </section>
+
+    <section class="section-shell" id="projects" aria-labelledby="projects-title">
+      <div class="section-heading">
+        <p class="eyebrow">Current work</p>
+        <h2 id="projects-title">Projects</h2>
+      </div>
+
+      <article class="project-row project-featured">
+        <div class="project-visual">
+          <img src="assets/uinjectforge-icon.png" alt="UInjectForge forge-chip logo" width="180" height="180">
         </div>
-        
-        <div class="container" v-if="page === 'uwuvci'">
-            <h2>UWUVCI Projects</h2>
-            <p>Tools for injecting Virtual Console games on Wii U.</p>
-            <div>
-                <a href="http://uwuvci.net" target="_blank">UWUVCI Website</a><br/>
-                <a href="https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF" target="_blank">UWUVCI V3</a><br/>
-                <a href="https://github.com/ZestyTS/UWUVCI-V3-Helper" target="_blank">UWUVCI V3 Helper</a><br/>
-            </div>
+        <div class="project-content">
+          <p class="project-type">Wii U utility</p>
+          <h3>UInjectForge</h3>
+          <p>Create customized Wii U installable titles from your own game backups. UInjectForge provides guided and advanced workflows, artwork tools, validation, batch preparation, and local-network delivery options.</p>
+          <p class="project-meta">Available for Windows, macOS, and Linux. Android is in preparation.</p>
+          <div class="text-links">
+            <a href="UInjectForge/">Project details</a>
+            <a href="https://zestyts.itch.io/uinjectforge" rel="noopener">Download on itch.io</a>
+            <a href="https://github.com/ZestyTS/UInjectForge" rel="noopener">Source and support</a>
+          </div>
         </div>
-        
-        <footer>
-            <p>&copy; 2025 Zesty Fernandez</p>
-            <div class="social-icons">
-                <a href="mailto:ZestyTS@gmail.com">📧 Contact Me</a>
-                <a href="https://twitter.com/ZestyTS" target="_blank">🐦 Twitter</a>
-                <a href="https://www.linkedin.com/in/zesty-fernandez/" target="_blank">🔗 LinkedIn</a>
-                <a href="https://www.youtube.com/@ZestysCorner" target="_blank">📺 YouTube</a>
-                <a href="https://github.com/ZestyTS" target="_blank">💻 GitHub</a>
-                <a href="https://ko-fi.com/zestyts" target="_blank">☕ Ko-fi</a>
-            </div>
-        </footer>
+      </article>
+
+      <article class="project-row">
+        <div class="project-index" aria-hidden="true">X</div>
+        <div class="project-content">
+          <p class="project-type">Action RPG</p>
+          <h3>The MisAdventures of Xenos</h3>
+          <p>An independent action RPG adventure available across desktop and mobile storefronts.</p>
+          <div class="text-links">
+            <a href="https://store.steampowered.com/app/2285000/The_MisAdventures_of_Xenos/" rel="noopener">Steam</a>
+            <a href="https://play.google.com/store/apps/details?id=com.zestyts.misadventuresofxenos" rel="noopener">Google Play</a>
+            <a href="https://apps.apple.com/us/app/the-misadventures-of-xenos/id6446100056" rel="noopener">App Store</a>
+            <a href="https://apps.microsoft.com/detail/9n4f89mkljk6" rel="noopener">Microsoft Store</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="info-band" id="about" aria-labelledby="about-title">
+      <div class="info-band-inner">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2 id="about-title">Software that respects the user's time</h2>
+        </div>
+        <p>I focus on clear workflows, useful diagnostics, broad device support, and tools that make complex processes easier to understand. Development notes and source code are available through GitHub, while release builds are distributed through their respective storefronts.</p>
+      </div>
+    </section>
+
+    <section class="section-shell contact-section" id="contact" aria-labelledby="contact-title">
+      <div class="section-heading">
+        <p class="eyebrow">Support and contact</p>
+        <h2 id="contact-title">Get in touch</h2>
+      </div>
+      <p>For product support, include the product name and the word "Support" in your email subject. Describe what happened and attach an exported support bundle when the application provides one.</p>
+      <div class="text-links contact-links">
+        <a href="mailto:ZestyTS@gmail.com">ZestyTS@gmail.com</a>
+        <a href="https://github.com/ZestyTS" rel="noopener">GitHub</a>
+        <a href="https://www.youtube.com/@ZestysCorner" rel="noopener">YouTube</a>
+        <a href="https://www.linkedin.com/in/zesty-fernandez/" rel="noopener">LinkedIn</a>
+        <a href="https://ko-fi.com/zestyts" rel="noopener">Ko-fi</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>&copy; 2026 Zesty Fernandez</p>
+      <div class="footer-links">
+        <a href="privacy/">Privacy policies</a>
+        <a href="mailto:ZestyTS@gmail.com">Contact</a>
+      </div>
     </div>
-    
-    <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    page: 'home'
-                };
-            },
-            methods: {
-                setPage(newPage) {
-                    this.page = newPage;
-                }
-            }
-        });
-        app.mount('#app');
-    </script>
+  </footer>
 </body>
 </html>
