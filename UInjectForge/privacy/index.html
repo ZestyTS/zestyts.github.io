@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0c10">
-  <meta name="description" content="Privacy policy for UInjectForge on Android, desktop, and supported companion tools.">
+  <meta name="description" content="Privacy policy for UInjectForge on iOS, Android, desktop, and supported companion tools.">
   <title>UInjectForge Privacy Policy</title>
   <link rel="icon" href="../../assets/uinjectforge-icon.png">
   <link rel="stylesheet" href="../../styles.css">
@@ -24,29 +24,35 @@
   <main class="policy-shell">
     <div class="policy-nav"><a href="../">Back to UInjectForge</a></div>
     <h1>UInjectForge Privacy Policy</h1>
-    <p class="updated">Effective September 1, 2026</p>
+    <p class="updated">Effective September 18, 2026</p>
 
     <p>UInjectForge helps you process your own game backups into customized Wii U titles. Most work happens locally on your device. This policy explains what the app stores, when it connects to other services, and what remains under your control.</p>
 
     <h2>Files and information stored on your device</h2>
-    <p>UInjectForge stores settings, saved-base records, build history, recovery checkpoints, trial status, cached purchase entitlement, imported sources, temporary work files, and completed output on your device. Keys that you choose to save are kept in app-private storage and use platform-protected storage where available. Android app backup is disabled.</p>
-    <p>Your selected game, artwork, base, runtime, and other source files are processed locally. UInjectForge does not automatically upload those files to the developer.</p>
+    <p>UInjectForge stores settings, saved-base records, build history, recovery checkpoints, trial status, cached purchase entitlement, imported sources, temporary work files, and completed output on your device. Keys that you choose to save are kept in app-private storage and use platform-protected storage where available. Android app backup is disabled. On iOS, saved secrets and local trial and unlock state use Apple Keychain; the app also attempts to exclude its private data folder from device backups.</p>
+    <p>Your selected game, artwork, base, runtime, and other source files are processed locally. UInjectForge does not automatically upload those files to the developer. A file provider you select may separately store or synchronize files under its own terms.</p>
 
-    <h2>Network features you choose to use</h2>
-    <p>UInjectForge can contact third-party services when you request online artwork, metadata, compatibility information, or base downloads. Those requests can reveal connection information and the identifiers or asset paths being requested to the selected provider. Current providers can include GitHub, Libretro, GameTDB, and Nintendo content-delivery infrastructure. Some legacy Wii U content-delivery requests may use unencrypted HTTP and should not be treated as confidential.</p>
-    <p>Wii U discovery, HTTP transfer, FTP transfer, and Assistant features communicate with a console on your local network. Use these features only on a network you trust.</p>
+    <h2>Artwork discovery and other network features</h2>
+    <p>Artwork discovery can start automatically when you select a source game, before you choose an online artwork candidate. The app can download catalog information and request matching artwork using a game identifier or a title-derived asset path. The source game file itself is not uploaded for these lookups. Downloaded catalog information and artwork can be cached locally.</p>
+    <p>Other online features can request metadata, compatibility information, manuals, or base downloads when you use the relevant feature. Current providers include GitHub-hosted community repositories, Libretro, GameTDB, and Nintendo content-delivery infrastructure. These services receive connection information, such as your IP address, and the requested URL or asset path. Some requests identify the app as UInjectForge. Providers may retain request information under their own policies; UInjectForge does not control their logging or retention. Some legacy Wii U content-delivery requests use unencrypted HTTP and should not be treated as confidential.</p>
+    <p>Wii U discovery, HTTP transfer, FTP transfer, and Assistant features communicate with a console on your local network. Transfers send the files you select to that console. Use these features only on a network you trust. Opening an external website also subjects that visit to the site's own privacy practices.</p>
 
     <h2>Google Play purchases</h2>
-    <p>The Android app offers three successful builds per installation and a one-time Google Play purchase for unlimited builds. Google Play processes the purchase and provides entitlement information to the app. UInjectForge stores the successful-build count and last confirmed entitlement in protected app-private storage. The developer does not operate a UInjectForge account or licensing server. Clearing app data or reinstalling can reset the local free-build count.</p>
+    <p>The Android app offers three successful builds and a one-time Google Play purchase for unlimited builds. Google Play processes the purchase and provides entitlement information to the app. UInjectForge stores the successful-build count and last confirmed entitlement in protected app-private storage. If you select a shared output folder, UIF also stores a small JSON receipt there containing the count, update time, app ID, and a one-way hash of Android's app-signing/user/device-scoped identifier. UIF does not send this receipt to the developer. The document provider you choose controls the folder and may sync the receipt if it is cloud-backed. Reselecting the folder can restore known usage after clearing app data or reinstalling; deleting or never creating the receipt can still reset the local count. The developer does not operate a UInjectForge account or licensing server.</p>
+
+    <h2>Apple App Store purchases and iCloud trial status</h2>
+    <p>The iOS app offers three successful builds and a separate one-time App Store purchase for unlimited builds. Apple processes the purchase. UInjectForge uses StoreKit to obtain product information, verify the unlock entitlement, and respond to purchase or entitlement changes. Payment-card details are not provided to UInjectForge. The app keeps local trial and confirmed unlock state in Apple Keychain. The developer does not operate a UInjectForge account, purchase-verification server, or trial-tracking backend.</p>
+    <p>When available, Apple's iCloud key-value store synchronizes three Boolean values indicating whether free build slots 1, 2, and 3 have been consumed. The values themselves contain no game files, keys, purchase tokens, device identifiers, or account identifiers. Apple associates the iCloud service with your Apple Account; these values are not sent to a developer-operated server. Synchronization depends on Apple's services and your iCloud availability. Apple operates iCloud and the App Store under its own privacy terms.</p>
 
     <h2>Support information</h2>
-    <p>Support bundles are created locally and are shared only when you choose to export and send them. UInjectForge attempts to redact sensitive values, but you should review a bundle before sharing it. Information you voluntarily send for support is retained only as needed to investigate the report and maintain project records.</p>
+    <p>Support bundles are created locally. Exporting a bundle saves it to the location you choose; it does not automatically send the bundle to the developer. A bundle can include the app version and build, game or base names, build activity, error details, environment information, and text diagnostics. UInjectForge attempts to redact keys and private paths and excludes source game files and other binary payloads from the bundle. Review the exported information before sharing it.</p>
+    <p>The developer receives information you voluntarily send for support, such as your email address, message, and any diagnostic attachments. That information is used to respond to your request and investigate the reported problem. Information you voluntarily send for support is retained only as needed to investigate the report and maintain project records. Contact the email address below about support information you have sent, including a request to delete it.</p>
 
     <h2>Advertising, analytics, and accounts</h2>
-    <p>UInjectForge does not include advertising or developer-operated analytics and does not create a UInjectForge account. Platform services and third-party sites used at your request operate under their own privacy policies.</p>
+    <p>UInjectForge does not include advertising or developer-operated analytics and does not create a UInjectForge account. The developer does not automatically receive your files, build history, trial count, or diagnostic bundles. Apple services, other platform services, and external providers have their own privacy practices.</p>
 
     <h2>Retention and deletion</h2>
-    <p>You can remove temporary files, imported sources, caches, history, and completed builds using UInjectForge's storage controls. Uninstalling the app removes app-private data according to the operating system. Files that you export to another folder, cloud provider, SD card, or Wii U remain there until you delete them.</p>
+    <p>You can remove temporary files, imported sources, caches, history, and completed builds using UInjectForge's storage controls. Removing these files does not reset trial usage or erase an App Store purchase. Uninstalling the app removes app-private files according to the operating system, but Keychain state, App Store purchase records, and the three iCloud trial flags may remain available. The app does not provide a control to reset the iCloud trial flags. Files that you export to another folder, cloud provider, SD card, or Wii U remain there until you delete them.</p>
 
     <h2>Children</h2>
     <p>UInjectForge is a technical utility intended for people who can lawfully manage their own game backups. It is not designed for children.</p>
@@ -55,7 +61,7 @@
     <p>This policy may be updated when app features or service providers change. The effective date above identifies the current version.</p>
 
     <h2>Contact</h2>
-    <p>For privacy questions, email <a href="mailto:ZestyTS@gmail.com">ZestyTS@gmail.com</a> or open an issue in the <a href="https://github.com/ZestyTS/UInjectForge/issues" rel="noopener">UInjectForge repository</a>.</p>
+    <p>For privacy questions or requests about information you have sent for support, email <a href="mailto:ZestyTS@gmail.com">ZestyTS@gmail.com</a>.</p>
   </main>
 
   <footer class="site-footer">
