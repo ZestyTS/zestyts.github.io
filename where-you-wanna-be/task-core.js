@@ -14,7 +14,7 @@
   const fail = message => { throw new Error(message); };
   function text(value, limit, name, required) {
     if (value === undefined && !required) return undefined;
-    if (typeof value !== "string" || (required && !value.trim()) || count(value.trim()) > limit || /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/u.test(value)) fail(`Check ${name}.`);
+    if (typeof value !== "string" || (required && !value.trim()) || count(value.trim()) > limit || /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069\uD800-\uDFFF]/u.test(value)) fail(`Check ${name}.`);
     if (name === "the task title" && /[\r\n\t]/u.test(value)) fail("Keep the task title on one line.");
     return value.trim() || undefined;
   }
@@ -55,8 +55,8 @@
       try { new Intl.DateTimeFormat("en", { timeZone: value.timezone }).format(); } catch { fail("Check the time zone."); }
       task.timezone = value.timezone;
     }
-    if (task.day && task.start && task.timezone) {
-      const parts = new Intl.DateTimeFormat("en", { timeZone: task.timezone, calendar: "gregory", numberingSystem: "latn", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(task.start));
+    if (task.day && task.start) {
+      const parts = new Intl.DateTimeFormat("en", { timeZone: task.timezone || "UTC", calendar: "gregory", numberingSystem: "latn", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(task.start));
       const part = type => parts.find(value => value.type === type).value;
       if (`${part("year").padStart(4, "0")}-${part("month")}-${part("day")}` !== task.day) fail("The suggested day and time do not match.");
     }

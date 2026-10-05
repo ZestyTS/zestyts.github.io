@@ -24,6 +24,9 @@ for (const [name, patch] of [
   ["invalid day", { day: "2026-02-30" }], ["year zero", { day: "0000-01-01" }], ["nonleap day", { day: "2025-02-29" }], ["nonUTC timestamp", { start: "2026-10-05T14:00:00-07:00" }], ["normalized invalid timestamp", { start: "2026-02-30T21:00:00Z" }], ["24-hour timestamp", { start: "2026-10-05T24:00:00Z" }], ["invalid zone", { timezone: "Not/A_Timezone" }], ["mismatched day and time", { day: "2026-10-06" }]
 ]) test(`reject ${name}`, () => assert.throws(() => task.validate({ ...sample, ...patch })));
 test("valid leap day", () => assert.equal(task.validate({ ...sample, day: "2024-02-29", start: undefined }).day, "2024-02-29"));
+test("day and time match in UTC when time zone is omitted", () => assert.equal(task.validate({ ...sample, timezone: undefined }).day, "2026-10-05"));
+test("reject mismatched UTC day without a time zone", () => assert.throws(() => task.validate({ ...sample, day: "2026-10-06", timezone: undefined })));
+for (const patch of [{ title: "x\ud800" }, { firstStep: "x\udfff" }, { smallerStep: "\udc00" }, { steps: ["\ud800"] }]) test(`reject lone UTF-16 surrogate ${checks}`, () => assert.throws(() => task.decode(raw({ ...sample, ...patch }))));
 test("Foundation fractional UTC timestamp", () => assert.equal(task.decode(raw({ ...sample, start: "2026-10-05T21:00:00.000Z" })).start, "2026-10-05T21:00:00.000Z"));
 test("nanosecond fractional UTC timestamp", () => assert.equal(task.validate({ ...sample, start: "2026-10-05T21:00:00.123456789Z" }).start, "2026-10-05T21:00:00.123456789Z"));
 test("receiver time zone day differs from UTC date", () => { const input = { ...sample, day: "2026-10-05", start: "2026-10-06T01:00:00Z" }; assert.equal(task.validate(input).day, "2026-10-05"); });
