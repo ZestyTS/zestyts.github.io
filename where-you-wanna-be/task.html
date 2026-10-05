@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Share one task, review its steps, and choose a time. Works in a browser on iPhone, Android, and computers.">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="task.css">
+<script src="task-core.js" defer></script>
+<script src="task.js" defer></script>
+<title>Share a task — Wanna Be</title>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><nav class="nav shell" aria-label="Main navigation">
+<a class="brand" href="./"><span class="task-brand-mark" aria-hidden="true">✦</span><span>Wanna Be</span></a>
+<div class="nav-links"><a href="task.html" aria-current="page">Share a task</a><a href="./">Support</a><a href="privacy.html">Privacy</a></div>
+</nav></header>
+<main id="main" class="task-shell shell">
+<header class="task-header"><p class="eyebrow">One helpful next step</p><h1 id="page-title">Share a task.</h1><p id="page-intro" class="task-intro">Send an idea or something that needs doing. The other person chooses whether and when to add it.</p></header>
+<noscript><p class="task-alert">Turn on JavaScript to create or read a task link. Nothing is sent automatically.</p></noscript>
+<p id="message" class="task-alert" role="status" aria-live="polite" hidden></p>
+<section id="composer" class="task-card" aria-labelledby="compose-title">
+<h2 id="compose-title" class="visually-hidden">Create a task</h2>
+<form id="task-form">
+<div class="field"><label for="task-title">Task</label><input id="task-title" name="title" type="text" required autocomplete="off" placeholder="For example, put the laundry away" aria-describedby="title-hint"><span id="title-hint" class="hint">A short title, up to 48 characters.</span></div>
+<div class="field"><label for="first-step">First small step <span class="optional">(optional)</span></label><textarea id="first-step" name="firstStep" rows="2" placeholder="Put the basket next to the closet"></textarea></div>
+<div class="field short-field"><label for="task-minutes">About how many minutes?</label><input id="task-minutes" name="minutes" type="number" min="1" max="1440" step="1" value="10" required inputmode="numeric"></div>
+<details class="task-details"><summary>Suggest a day or time</summary><div class="details-content">
+<div class="field"><label for="suggested-day">Suggested day <span class="optional">(optional)</span></label><input id="suggested-day" name="day" type="date"></div>
+<div class="check-field"><input id="suggest-time" type="checkbox"><label for="suggest-time">Suggest an exact time</label></div>
+<div id="suggested-time-field" class="field" hidden><label for="suggested-time">Time <span id="sender-timezone" class="optional"></span></label><input id="suggested-time" name="time" type="time" disabled></div>
+</div></details>
+<details class="task-details"><summary>Add steps or a smaller start</summary><div class="details-content">
+<div class="field"><label for="task-steps">Steps <span class="optional">(optional)</span></label><textarea id="task-steps" name="steps" rows="4" placeholder="Put shirts in the drawer&#10;Hang up jackets" aria-describedby="steps-hint"></textarea><span id="steps-hint" class="hint">One step per line. Up to 30 steps, 160 characters each.</span></div>
+<div class="field"><label for="smaller-step">A smaller start <span class="optional">(optional)</span></label><textarea id="smaller-step" name="smallerStep" rows="2" placeholder="Put away just one thing"></textarea></div>
+</div></details>
+<button class="button" type="submit">Review task <span aria-hidden="true">→</span></button>
+</form>
+</section>
+<section id="review" class="task-card" aria-labelledby="task-heading" hidden>
+<p id="review-label" class="eyebrow">Ready to share</p>
+<h2 id="task-heading" tabindex="-1"></h2>
+<p id="task-meta" class="hint"></p>
+<div id="first-step-preview" class="task-part" hidden><h3>First small step</h3><p></p></div>
+<div id="steps-preview" class="task-part" hidden><h3>Steps</h3><ol></ol></div>
+<div id="smaller-step-preview" class="task-part" hidden><h3>A smaller start</h3><p></p></div>
+<div id="sender-actions" hidden><div class="actions"><button id="share-task" class="button" type="button">Share task</button><button id="copy-task" class="secondary-button" type="button">Copy link</button><button id="edit-task" class="text-button" type="button">Edit</button></div></div>
+<div id="recipient-actions" hidden><div class="actions"><a id="open-app" class="button" href="wannabe://task">Open in Wanna Be</a><a class="text-link" href="#calendar-options">Choose a calendar time <span aria-hidden="true">↓</span></a></div><p class="hint action-hint">The iPhone or iPad app lets you review, edit, and add this to Today. It needs a version with task sharing.</p></div>
+<div id="copy-fallback" class="field" hidden><label for="task-link">Task link</label><textarea id="task-link" rows="3" readonly spellcheck="false"></textarea><p class="hint">Select the link and copy it.</p></div>
+<p id="long-link-note" class="hint" hidden>This is a long link. Some messaging apps may shorten it.</p>
+</section>
+<section id="calendar-options" class="task-card" aria-labelledby="calendar-title" hidden>
+<h2 id="calendar-title">Choose a time.</h2><p class="hint">Make a calendar copy on your terms. The task link stays the same.</p>
+<form id="calendar-form">
+<div class="date-time-fields"><div class="field"><label for="calendar-day">Day</label><input id="calendar-day" type="date" required></div><div class="field"><label for="calendar-time">Time</label><input id="calendar-time" type="time" required></div></div>
+<p id="recipient-timezone" class="hint"></p>
+<button id="calendar-download" class="secondary-button" type="submit">Download calendar file</button>
+</form>
+<p class="hint action-hint">Open the .ics file in a calendar app that supports it, then review and save. Set reminders in your calendar. This page does not send reminders or track completion.</p>
+<details class="task-details"><summary>Using Google Calendar?</summary><div class="details-content"><p>Google Calendar imports .ics files on a computer. Save the file, then open Settings → Import &amp; export at Google Calendar on your computer. <a href="https://support.google.com/calendar/answer/37118" target="_blank" rel="noopener noreferrer">Google’s import instructions</a>.</p><p>On a phone, you can copy the task details below and create an event in your calendar instead.</p><button id="copy-details" class="text-button" type="button">Copy task details</button><div id="details-fallback" class="field" hidden><label for="task-details-text">Task details</label><textarea id="task-details-text" rows="6" readonly></textarea></div></div></details>
+</section>
+<div class="task-bottom"><p class="hint">No account needed. Task details are inside the link; anyone who has it can read them. Share only what you mean to share. <a href="privacy.html#sharing">How sharing works</a>.</p><button id="new-task" class="text-button" type="button" hidden>Create another task</button></div>
+</main>
+<footer class="site-footer"><div class="footer-inner shell"><p>© 2026 Zesty Fernandez · Where You Wanna Be</p><div class="footer-links"><a href="./">Support</a><a href="privacy.html">Privacy policy</a><a href="mailto:ZestyTS@gmail.com">Email</a></div></div></footer>
+</body>
+</html>
