@@ -8,6 +8,9 @@
   const BASE = "https://zestyts.github.io/where-you-wanna-be/task.html";
   const MAX_JSON_BYTES = 16384;
   const MAX_ENCODED = 24576;
+  const MAX_ITEMS = 200;
+  const MAX_DEPTH = 10;
+  const FIELDS = ["id", "title", "firstStep", "steps", "smallerStep", "minutes", "flexible", "day", "start", "timezone"];
   const encoder = new TextEncoder();
   const segmenter = typeof Intl.Segmenter === "function" ? new Intl.Segmenter(undefined, { granularity: "grapheme" }) : null;
   const count = value => segmenter ? Array.from(segmenter.segment(value)).length : Array.from(value).length;
@@ -23,14 +26,20 @@
     const date = new Date(`${value}T12:00:00Z`);
     return Number.isFinite(date.valueOf()) && date.toISOString().slice(0, 10) === value;
   }
-  function validate(value) {
+  function object(value) {
     if (!value || typeof value !== "object" || Array.isArray(value)) fail("This task link is not valid.");
-    if (value.v !== 1) fail("This task link needs a newer version of Wanna Be.");
-    const known = new Set(["v", "id", "title", "firstStep", "steps", "smallerStep", "minutes", "flexible", "day", "start", "timezone"]);
+  }
+  function knownFields(value, fields) {
+    const known = new Set(fields);
     if (Object.keys(value).some(key => !known.has(key))) fail("This task link has unsupported information.");
-    if (typeof value.id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.id)) fail("This task link is not valid.");
+  }
+  function identifier(value) {
+    if (typeof value !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) fail("This task link is not valid.");
+    return value.toLowerCase();
+  }
+  function taskFields(value) {
     if (!Number.isInteger(value.minutes) || value.minutes < 1 || value.minutes > 1440 || typeof value.flexible !== "boolean") fail("Check the task’s time estimate.");
-    const task = { v: 1, id: value.id.toLowerCase(), title: text(value.title, 48, "the task title", true), minutes: value.minutes, flexible: value.flexible };
+    const task = { id: identifier(value.id), title: text(value.title, 48, "the task title", true), minutes: value.minutes, flexible: value.flexible };
     for (const key of ["firstStep", "smallerStep"]) {
       const content = text(value[key], 160, "the small step", false);
       if (content) task[key] = content;
@@ -60,8 +69,87 @@
       const part = type => parts.find(value => value.type === type).value;
       if (`${part("year").padStart(4, "0")}-${part("month")}-${part("day")}` !== task.day) fail("The suggested day and time do not match.");
     }
+    return task;
+  }
+  function validate(value) {
+    object(value);
+    let task;
+    if (value.v === 1) {
+      knownFields(value, ["v", ...FIELDS]);
+      task = { v: 1, ...taskFields(value) };
+    } else if (value.v === 2) {
+      knownFields(value, ["v", ...FIELDS.filter(key => key !== "day" && key !== "start"), "kind", "subtasks"]);
+      if (value.kind !== "group" || !Array.isArray(value.subtasks) || value.subtasks.length + 1 > MAX_ITEMS) fail("Check the shared task group.");
+      task = { v: 2, ...taskFields(value), kind: "group", subtasks: [] };
+      task.flexible = true;
+      for (const node of value.subtasks) {
+        object(node); knownFields(node, [...FIELDS, "parentID", "kind"]);
+        if (node.kind !== "group" && node.kind !== "task") fail("Check the subtask type.");
+        if (node.kind === "group" && (Object.hasOwn(node, "day") || Object.hasOwn(node, "start"))) fail("Only individual tasks can suggest a calendar time.");
+        const clean = { ...taskFields(node), parentID: identifier(node.parentID), kind: node.kind };
+        if (clean.kind === "group") clean.flexible = true;
+        task.subtasks.push(clean);
+      }
+      const indexed = new Map([[task.id, task]]);
+      for (const node of task.subtasks) {
+        if (indexed.has(node.id)) fail("Two subtasks have the same identity.");
+        indexed.set(node.id, node);
+      }
+      for (const node of task.subtasks) {
+        const parent = indexed.get(node.parentID);
+        if (!parent || parent.kind !== "group") fail("A subtask’s bigger task is missing or invalid.");
+        let cursor = node, depth = 1;
+        const seen = new Set([node.id]);
+        while (cursor.parentID) {
+          if (seen.has(cursor.parentID)) fail("A task group cannot contain itself.");
+          seen.add(cursor.parentID); cursor = indexed.get(cursor.parentID); depth++;
+          if (!cursor) fail("A subtask’s bigger task is missing.");
+          if (depth > MAX_DEPTH) fail(`Use no more than ${MAX_DEPTH} levels of tasks and groups.`);
+        }
+        if (cursor.id !== task.id) fail("A subtask is outside this shared group.");
+      }
+    } else fail("This task link needs a newer version of Wanna Be.");
     if (encoder.encode(JSON.stringify(task)).length > MAX_JSON_BYTES) fail("This task link is too long.");
     return task;
+  }
+  function rows(value) {
+    const task = validate(value);
+    if (task.v === 1) return [{ item: task, depth: 1, parent: null }];
+    const children = new Map();
+    for (const item of task.subtasks) {
+      if (!children.has(item.parentID)) children.set(item.parentID, []);
+      children.get(item.parentID).push(item);
+    }
+    const result = [], pending = [{ item: task, depth: 1, parent: null }];
+    while (pending.length) {
+      const row = pending.pop(); result.push(row);
+      for (const child of (children.get(row.item.id) || []).slice().reverse()) pending.push({ item: child, depth: row.depth + 1, parent: row.item });
+    }
+    return result;
+  }
+  function calendarTask(value, id) {
+    const task = validate(value);
+    if (task.v === 1) {
+      if (id && id.toLowerCase() !== task.id) fail("Choose an individual task for the calendar copy.");
+      return task;
+    }
+    const node = task.subtasks.find(item => item.id === (typeof id === "string" ? id.toLowerCase() : ""));
+    if (!node || node.kind !== "task") fail("Choose an individual subtask for the calendar copy.");
+    const { parentID, kind, ...fields } = node;
+    return validate({ v: 1, ...fields });
+  }
+  function plainText(value) {
+    return rows(value).map(({ item, depth }) => {
+      const indent = "  ".repeat(depth - 1), lines = [`${indent}${item.title}${item.kind === "group" ? " (bigger task)" : ""}`];
+      const detail = content => lines.push(`${indent}  ${content}`);
+      if (item.kind !== "group") detail(`About ${item.minutes} ${item.minutes === 1 ? "minute" : "minutes"}`);
+      if (item.start) detail(`Suggested: ${item.start}${item.timezone ? ` (${item.timezone})` : ""}`);
+      else if (item.day) detail(`Suggested day: ${item.day}`);
+      if (item.firstStep) detail(`${item.kind === "group" ? "Note" : "First small step"}: ${item.firstStep.replace(/\n/g, `\n${indent}  `)}`);
+      if (item.steps) item.steps.forEach((step, index) => detail(`${item.kind === "group" ? "Reference step" : "Step"} ${index + 1}: ${step.replace(/\n/g, `\n${indent}  `)}`));
+      if (item.smallerStep) detail(`A smaller start: ${item.smallerStep.replace(/\n/g, `\n${indent}  `)}`);
+      return lines.join("\n");
+    }).join("\n\n");
   }
   function encode(value) {
     const bytes = encoder.encode(JSON.stringify(validate(value)));
@@ -114,8 +202,8 @@
     if (date.getUTCFullYear() < 1 || date.getUTCFullYear() > 9999) fail("Choose a calendar date between years 1 and 9999.");
     return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   }
-  function calendarFile(value, start, now = new Date()) {
-    const task = validate(value);
+  function calendarFile(value, start, now = new Date(), selectedID) {
+    const task = calendarTask(value, selectedID);
     const end = new Date(start.valueOf() + task.minutes * 60000);
     const notes = [task.firstStep, task.steps && task.steps.map((step, i) => `${i + 1}. ${step}`).join("\n"), task.smallerStep && `A smaller start: ${task.smallerStep}`].filter(Boolean).join("\n\n");
     const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ZestyTS//Wanna Be Tasks//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", `UID:${task.id}@wannabe.zestyts.github.io`, `DTSTAMP:${stamp(now)}`, `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escapeCalendarText(task.title)}`];
@@ -137,5 +225,5 @@
     if (localDay(result) !== day || result.getHours() !== hours || result.getMinutes() !== minutes) fail("That time does not exist in your time zone. Choose another time.");
     return result;
   }
-  return Object.freeze({ validate, sameContent, encode, decode, fromLink, link, appLink, calendarFile, escapeCalendarText, foldLine, localStart, localDay, count });
+  return Object.freeze({ validate, sameContent, encode, decode, fromLink, link, appLink, rows, plainText, calendarTask, calendarFile, escapeCalendarText, foldLine, localStart, localDay, count });
 });

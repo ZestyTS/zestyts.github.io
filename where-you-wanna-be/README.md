@@ -2,6 +2,23 @@
 
 Support, privacy, and task-sharing pages for the iPhone and iPad app, currently in testing.
 
+## Browser task-group source follow-up — October 6, 2026
+
+**This browser source adds task-group compatibility.** Matching local app configuration remains **0.9.9 (development build 28)**; no new app upload is implied. **144 browser checks passed** (128 codec/Calendar checks and 16 page-interaction checks). Native app verification is tracked separately in [Validation](../../WSAD/VALIDATION.md).
+
+The browser source keeps version-1 single-task composition and backward-compatible link review, and adds strict version-2 whole-branch review. A group shows all included descendants with task/group context and notes/reference steps; opening it creates no tasks, dates, reminders, or checkmarks. A compatible iPhone/iPad app offers one reviewed branch acceptance with dates off by default and an optional suggested-timing choice. Older builds need an update for group acceptance.
+
+Android and other browsers can read both versions without an app account. For a group Calendar copy, the recipient chooses one actionable subtask and its date/time; the page does not invent a group event or download all children automatically. It can provide copied details or a reviewed `.ics` file. Calendar applications handle import and reminders. The source still has no task backend, inbox, live progress, remote requests, analytics, or browser persistence; anyone with a link can read its included details.
+
+Run the dependency-free checks from `outputs/Store-Website`:
+
+```sh
+node where-you-wanna-be/tests/task-core.test.cjs
+node where-you-wanna-be/tests/task-page.test.cjs
+```
+
+## Historical website source checkpoint — October 5, 2026
+
 **Source updated October 5, 2026, for 0.9.9 (build 27).** The earlier September 20 privacy draft remains incorporated. Native task import requires an app build with task sharing; this file does not establish TestFlight status.
 
 - Support: https://zestyts.github.io/where-you-wanna-be/

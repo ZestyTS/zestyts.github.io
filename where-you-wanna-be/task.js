@@ -5,6 +5,7 @@
   let current = null;
   let taskID = null;
   let madeHere = false;
+  let calendarTaskID = null;
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const say = message => { byID("message").textContent = message; byID("message").hidden = !message; };
   const timezoneLabel = `Your time zone: ${timeZone.replace(/_/g, " ")}`;
@@ -29,25 +30,83 @@
     const part = byID(id); part.hidden = !value;
     part.querySelector("p").textContent = value || "";
   }
-  function review(task, sender, focus) {
-    current = task; madeHere = sender;
-    byID("composer").hidden = true; byID("review").hidden = false;
-    byID("page-title").textContent = sender ? "Review your task." : "A task for you.";
-    byID("page-intro").textContent = sender ? "Choose how to send it. The other person decides what to add." : "Choose whether and when this fits your day.";
-    byID("review-label").textContent = sender ? "Ready to share" : "Shared task";
-    byID("task-heading").textContent = task.title;
+  function timingText(task) {
     let timing = `${task.minutes} ${task.minutes === 1 ? "minute" : "minutes"}`;
     if (task.start) {
       timing += ` · Suggested: ${shortTime(new Date(task.start), task.timezone || "UTC")}`;
       if ((task.timezone || "UTC") !== timeZone) timing += ` (${(task.timezone || "UTC").replace(/_/g, " ")})`;
     } else if (task.day) timing += ` · Suggested: ${suggestedDay(task.day)}`;
-    else timing += " · Choose your own time";
-    byID("task-meta").textContent = timing;
+    else timing += " · No day chosen";
+    return timing;
+  }
+  function renderBranch(task) {
+    const list = byID("branch-list"); list.replaceChildren();
+    byID("branch-preview").hidden = task.v !== 2;
+    if (task.v !== 2) return;
+    if (!task.subtasks.length) {
+      const item = document.createElement("li"); item.textContent = "No subtasks yet."; list.append(item); return;
+    }
+    for (const row of api.rows(task).slice(1)) {
+      const item = document.createElement("li"), title = document.createElement("strong"), context = document.createElement("p");
+      title.textContent = row.item.title;
+      context.className = "hint";
+      context.textContent = `Level ${row.depth} · Part of ${row.parent.title} · ${row.item.kind === "group" ? "Bigger task" : timingText(row.item)}`;
+      item.append(title, context);
+      const notes = [row.item.firstStep && `${row.item.kind === "group" ? "Note" : "First small step"}: ${row.item.firstStep}`, ...(row.item.steps || []).map((step, index) => `${row.item.kind === "group" ? "Reference step" : "Step"} ${index + 1}: ${step}`), row.item.smallerStep && `A smaller start: ${row.item.smallerStep}`].filter(Boolean);
+      if (notes.length) {
+        const details = document.createElement("details"), summary = document.createElement("summary"), content = document.createElement("p");
+        details.className = "task-details"; summary.textContent = "Steps and notes"; content.textContent = notes.join("\n\n");
+        details.append(summary, content); item.append(details);
+      }
+      list.append(item);
+    }
+  }
+  function configureCalendar(task) {
+    calendarTaskID = task.v === 1 ? task.id : null;
+    const select = byID("calendar-task"); select.replaceChildren();
+    const prompt = document.createElement("option"); prompt.value = ""; prompt.textContent = "Choose one subtask"; select.append(prompt);
+    const leaves = task.v === 2 ? api.rows(task).filter(row => row.item.kind === "task") : [];
+    for (const row of leaves) {
+      const option = document.createElement("option"); option.value = row.item.id;
+      option.textContent = `${row.item.title} — part of ${row.parent.title}`; select.append(option);
+    }
+    select.value = ""; select.required = task.v === 2;
+    byID("calendar-task-field").hidden = task.v !== 2;
+    byID("calendar-options").hidden = madeHere || (task.v === 2 && !leaves.length);
+    byID("calendar-jump").hidden = task.v === 2 && !leaves.length;
+    byID("calendar-intro").textContent = task.v === 2 ? "Choose one subtask, then its day and time. Bigger tasks are containers and don’t become events." : "Make a calendar copy on your terms. The task link stays the same.";
+    chooseCalendarTask();
+  }
+  function chooseCalendarTask() {
+    const enabled = Boolean(calendarTaskID);
+    for (const id of ["calendar-day", "calendar-time", "calendar-download"]) byID(id).disabled = !enabled;
+    byID("calendar-day").value = ""; byID("calendar-time").value = "";
+    if (!enabled) return;
+    const task = api.calendarTask(current, calendarTaskID);
+    if (task.start) {
+      const start = new Date(task.start);
+      byID("calendar-day").value = api.localDay(start);
+      byID("calendar-time").value = `${start.getHours().toString().padStart(2, "0")}:${start.getMinutes().toString().padStart(2, "0")}`;
+    } else if (task.day) byID("calendar-day").value = task.day;
+    // An undated task stays blank. No default today/time or calendar write.
+  }
+  function review(task, sender, focus) {
+    current = task; madeHere = sender;
+    byID("composer").hidden = true; byID("review").hidden = false;
+    byID("page-title").textContent = sender ? "Review your task." : task.v === 2 ? "A task group for you." : "A task for you.";
+    byID("page-intro").textContent = sender ? "Choose how to send it. The other person decides what to add." : task.v === 2 ? "Review the bigger task and its parts. Choose what fits; nothing is added automatically." : "Choose whether and when this fits your day.";
+    byID("review-label").textContent = sender ? "Ready to share" : task.v === 2 ? "Shared task group" : "Shared task";
+    byID("task-heading").textContent = task.title;
+    const leaves = task.v === 2 ? task.subtasks.filter(item => item.kind === "task").length : 0;
+    byID("task-meta").textContent = task.v === 2 ? `Bigger task · ${leaves} ${leaves === 1 ? "task" : "tasks"} inside · No progress shared` : timingText(task);
+    byID("first-step-preview").querySelector("h3").textContent = task.v === 2 ? "Note" : "First small step";
+    byID("steps-preview").querySelector("h3").textContent = task.v === 2 ? "Reference steps" : "Steps";
     renderPart("first-step-preview", task.firstStep);
     renderPart("smaller-step-preview", task.smallerStep);
     byID("steps-preview").hidden = !task.steps || !task.steps.length;
     const list = byID("steps-preview").querySelector("ol"); list.replaceChildren();
     for (const step of task.steps || []) { const item = document.createElement("li"); item.textContent = step; list.append(item); }
+    renderBranch(task);
     byID("sender-actions").hidden = !sender;
     byID("recipient-actions").hidden = sender;
     byID("share-task").hidden = !navigator.share;
@@ -56,11 +115,9 @@
     byID("copy-fallback").hidden = true;
     byID("long-link-note").hidden = api.link(task).length < 4000;
     byID("new-task").hidden = false;
-    byID("calendar-options").hidden = sender;
-    const rounded = new Date(Math.ceil(Date.now() / 900000) * 900000);
-    const start = task.start ? new Date(task.start) : rounded;
-    byID("calendar-day").value = task.start ? api.localDay(start) : task.day || api.localDay(start);
-    byID("calendar-time").value = `${start.getHours().toString().padStart(2, "0")}:${start.getMinutes().toString().padStart(2, "0")}`;
+    byID("details-fallback").hidden = true;
+    byID("app-version-note").textContent = task.v === 2 ? "The iPhone or iPad app lets you review and add the whole group. It needs a version with task-group sharing. The group starts without dates; planning its parts is your choice." : "The iPhone or iPad app lets you review and add this to your tasks. It needs a version with task sharing.";
+    configureCalendar(task);
     if (focus) byID("task-heading").focus();
   }
   function readHash() {
@@ -91,7 +148,6 @@
     byID("suggested-time").disabled = !enabled;
     byID("suggested-time").required = enabled;
     byID("suggested-day").required = enabled;
-    if (enabled && !byID("suggested-day").value) byID("suggested-day").value = api.localDay(new Date());
   });
   byID("task-form").addEventListener("submit", event => {
     event.preventDefault(); checks.forEach(check => check());
@@ -135,9 +191,11 @@
   });
   byID("calendar-form").addEventListener("submit", event => {
     event.preventDefault();
+    if (!event.target.reportValidity()) return;
     try {
+      if (!calendarTaskID) throw new Error("Choose an individual subtask first.");
       const start = api.localStart(byID("calendar-day").value, byID("calendar-time").value);
-      const blob = new Blob([api.calendarFile(current, start)], { type: "text/calendar;charset=utf-8" });
+      const blob = new Blob([api.calendarFile(current, start, new Date(), calendarTaskID)], { type: "text/calendar;charset=utf-8" });
       const objectURL = URL.createObjectURL(blob);
       const anchor = document.createElement("a"); anchor.href = objectURL; anchor.download = "wanna-be-task.ics";
       document.body.append(anchor); anchor.click(); anchor.remove();
@@ -145,17 +203,15 @@
       say("Calendar file ready. Review and save it in your calendar, then set any reminder there.");
     } catch (error) { say(error.message); }
   });
+  byID("calendar-task").addEventListener("change", event => {
+    calendarTaskID = event.target.value || null; chooseCalendarTask(); say("");
+  });
   byID("copy-details").addEventListener("click", () => {
-    let value = `${current.title}\nAbout ${current.minutes} minutes`;
-    try { value += `\n${shortTime(api.localStart(byID("calendar-day").value, byID("calendar-time").value))} (${timeZone})`; } catch { /* Leave an unset date out of the copied note. */ }
-    if (current.firstStep) value += `\n\nFirst small step: ${current.firstStep}`;
-    if (current.steps) value += `\n\n${current.steps.map((step, i) => `${i + 1}. ${step}`).join("\n")}`;
-    if (current.smallerStep) value += `\n\nA smaller start: ${current.smallerStep}`;
-    copy(value, "details-fallback", "task-details-text", "Task details copied. Paste them into an event and choose a reminder.");
+    copy(api.plainText(current), "details-fallback", "task-details-text", "Task details copied. Choose where to use them.");
   });
   byID("new-task").addEventListener("click", () => {
     history.replaceState(null, "", location.pathname + location.search);
-    current = null; taskID = null; madeHere = false; byID("task-form").reset();
+    current = null; taskID = null; madeHere = false; calendarTaskID = null; byID("task-form").reset();
     byID("suggested-time-field").hidden = true; byID("suggested-time").disabled = true;
     byID("suggested-time").required = false; byID("suggested-day").required = false;
     checks.forEach(check => check());
