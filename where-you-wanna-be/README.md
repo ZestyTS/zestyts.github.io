@@ -1,44 +1,33 @@
 # Where You Wanna Be website
 
-Support, privacy, and task-sharing pages for the iPhone and iPad app, currently in testing.
+Product information, support, privacy, and browser task tools for Wanna Be on iPhone, iPad, and Android. The app is in testing; these source files do not establish TestFlight or APK availability.
 
-## Browser task-group source follow-up — October 6, 2026
+## Stable public URLs
 
-**This browser source adds task-group compatibility.** Matching local app configuration remains **0.9.9 (development build 28)**; no new app upload is implied. **144 browser checks passed** (128 codec/Calendar checks and 16 page-interaction checks). Native app verification is tracked separately in [Validation](../../WSAD/VALIDATION.md).
+- Overview and support: https://zestyts.github.io/where-you-wanna-be/
+- Privacy: https://zestyts.github.io/where-you-wanna-be/privacy.html
+- Browser task tools: https://zestyts.github.io/where-you-wanna-be/task.html
 
-The browser source keeps version-1 single-task composition and backward-compatible link review, and adds strict version-2 whole-branch review. A group shows all included descendants with task/group context and notes/reference steps; opening it creates no tasks, dates, reminders, or checkmarks. A compatible iPhone/iPad app offers one reviewed branch acceptance with dates off by default and an optional suggested-timing choice. Older builds need an update for group acceptance.
+Keep these URLs stable because the apps and App Store listing use them. All three pages use the site-wide `../styles.css`, global ZestyTS navigation, and the product navigation. Product-specific styles extend the shared stylesheet rather than copying a separate color palette. The homepage project list, privacy index, and sitemap link back to this product.
 
-Android and other browsers can read both versions without an app account. For a group Calendar copy, the recipient chooses one actionable subtask and its date/time; the page does not invent a group event or download all children automatically. It can provide copied details or a reviewed `.ics` file. Calendar applications handle import and reminders. The source still has no task backend, inbox, live progress, remote requests, analytics, or browser persistence; anyone with a link can read its included details.
+## Native sharing and browser fallback
 
-Run the dependency-free checks from `outputs/Store-Website`:
+Sharing starts in the app with **Today → Send a task**. A recipient can open a `.wannabetask` attachment with Wanna Be or use **Today → Import task**. The website is a fallback for people without the app and supports local composition or review; it is not a required step between apps.
+
+The default browser share is a named `.wannabetask` file. Web links remain available as an explicit alternative. Version 1 contains a single task; version 2 contains a bigger task and its independent subtasks, preserving up to ten levels. Both formats are bounded to 16 KiB of strict UTF-8 JSON. Completion, reminders, history, and unrelated tasks do not transfer. Recipients review a separate copy; later changes do not sync.
+
+Task details stay in the browser: no task backend, inbox, accounts, analytics, cookies, remote task requests, or browser persistence. Link details are in a `#task=` Base64URL fragment, which is not sent to GitHub Pages in a page request. Anyone with the file or link can read its contents. The task page has a restrictive Content Security Policy and no-referrer policy.
+
+The explicit `wannabe://task?data=` link offers app handoff for browser review. Calendar export requires the recipient to choose a day and time; a group also requires one individual subtask. The `.ics` file contains no attendees or automatic alarms. Calendar applications handle review, import, and reminders. Google Calendar documents `.ics` import on a computer; copying details is available for manual mobile entry.
+
+## Validation and preview
+
+From the repository root:
 
 ```sh
 node where-you-wanna-be/tests/task-core.test.cjs
 node where-you-wanna-be/tests/task-page.test.cjs
+python3 -m http.server 8765 --bind 127.0.0.1
 ```
 
-## Historical website source checkpoint — October 5, 2026
-
-**Source updated October 5, 2026, for 0.9.9 (build 27).** The earlier September 20 privacy draft remains incorporated. Native task import requires an app build with task sharing; this file does not establish TestFlight status.
-
-- Support: https://zestyts.github.io/where-you-wanna-be/
-- Privacy: https://zestyts.github.io/where-you-wanna-be/privacy.html
-- Task composer/reviewer: https://zestyts.github.io/where-you-wanna-be/task.html
-
-Keep these URLs stable because the app and App Store listing use them. Task links have a `#task=` Base64URL JSON fragment; neither this page nor the app uses a sharing server, task inbox, or account. The recipient reviews a separate copy. The page supports Android/browser task composition and review, an explicit `wannabe://task?data=` app link, and a recipient-chosen `.ics` calendar copy. Google Calendar documents `.ics` imports on a computer; the page links to those instructions and offers copied details for manual mobile entry. Calendar copies have no sender, attendees, or alarms; users set reminders in their calendar.
-
-`task-core.js` is a small browser/CommonJS module implementing bounded version-1 decoding and iCalendar generation. `task.js` provides the page interactions with `textContent`, no remote requests, analytics, external fonts, cookies, or browser persistence. The task page has a restrictive CSP and no-referrer policy. Browsers and messaging services can retain the full task link; anyone with it can read the task.
-
-Run the dependency-free codec and calendar checks with:
-
-```sh
-node where-you-wanna-be/tests/task-core.test.cjs
-```
-
-Serving locally for browser review:
-
-```sh
-python3 -m http.server 8765
-```
-
-The public app version remains 0.9.9. Future beta uploads increment the build number only.
+The October 8 source checkpoint passed 143 codec/calendar checks and 27 DOM-flow checks, including malformed inputs, exact byte/depth boundaries, plain-text rendering, draft protection, and asynchronous file-selection races. Native app and cross-platform delivery checks are tracked with the app sources separately.
