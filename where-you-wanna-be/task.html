@@ -3,26 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0c10">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<meta name="description" content="Share a task or review a whole task group and its subtasks. Works in a browser on iPhone, Android, and computers.">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="task.css">
-<script src="task-core.js" defer></script>
-<script src="task.js" defer></script>
-<title>Share a task — Wanna Be</title>
+<meta name="description" content="Create a named task file or review a shared task and its subtasks. Works with Where You Wanna Be on iPhone and Android, or in your browser.">
+<link rel="stylesheet" href="task.css?v=20261007-task-files">
+<script src="task-core.js?v=20261007-task-files" defer></script>
+<script src="task.js?v=20261007-task-files" defer></script>
+<title>Share a task | ZestyTS</title>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><nav class="nav shell" aria-label="Main navigation">
-<a class="brand" href="./"><span class="task-brand-mark" aria-hidden="true">✦</span><span>Wanna Be</span></a>
-<div class="nav-links"><a href="task.html" aria-current="page">Share a task</a><a href="./">Support</a><a href="privacy.html">Privacy</a></div>
+<a class="brand" href="../">ZestyTS</a>
+<div class="nav-links"><a href="../#projects">Projects</a><a href="task.html" aria-current="page">Share a task</a><a href="./">Support</a><a href="privacy.html">Privacy</a></div>
 </nav></header>
 <main id="main" class="task-shell shell">
-<header class="task-header"><p class="eyebrow">One helpful next step</p><h1 id="page-title">Share a task.</h1><p id="page-intro" class="task-intro">Send an idea or something that needs doing. The other person chooses whether and when to add it.</p></header>
-<noscript><p class="task-alert">Turn on JavaScript to create or read a task link. Nothing is sent automatically.</p></noscript>
+<header class="task-header"><p class="eyebrow">Where You Wanna Be</p><h1 id="page-title">Share a task.</h1><p id="page-intro" class="task-intro">Send an idea or something that needs doing. The other person chooses whether and when to add it.</p></header>
+<noscript><p class="task-alert">Turn on JavaScript to create or review a task file or link. Nothing is sent automatically.</p></noscript>
 <p id="message" class="task-alert" role="status" aria-live="polite" hidden></p>
+<section id="file-entry" class="task-file-entry" aria-labelledby="file-entry-title"><div><h2 id="file-entry-title">Got a task file?</h2><p class="hint">Open a .wannabetask file to review it.</p></div><button id="open-task-file" class="secondary-button" type="button">Open task file</button><input id="task-file-input" type="file" accept=".wannabetask,application/vnd.zestyts.wannabe-task+json" hidden></section>
+<section id="file-replace" class="task-alert" aria-labelledby="file-replace-title" hidden><h2 id="file-replace-title" tabindex="-1">Replace your draft?</h2><p>Your draft stays here until you choose to review the file.</p><div class="actions"><button id="keep-draft" class="secondary-button" type="button">Keep editing</button><button id="review-task-file" class="button" type="button">Review file</button></div></section>
 <section id="composer" class="task-card" aria-labelledby="compose-title">
 <h2 id="compose-title" class="visually-hidden">Create a task</h2>
 <form id="task-form">
@@ -49,11 +51,11 @@
 <div id="steps-preview" class="task-part" hidden><h3>Steps</h3><ol></ol></div>
 <div id="smaller-step-preview" class="task-part" hidden><h3>A smaller start</h3><p></p></div>
 <div id="branch-preview" class="task-part" hidden><h3>Subtasks</h3><p class="hint">Each part stays separate. Nothing is completed or put on your calendar automatically.</p><ol id="branch-list"></ol></div>
-<div id="sender-actions" hidden><div class="actions"><button id="share-task" class="button" type="button">Share task</button><button id="copy-task" class="secondary-button" type="button">Copy link</button><button id="edit-task" class="text-button" type="button">Edit</button></div></div>
-<div id="recipient-actions" hidden><div class="actions"><a id="open-app" class="button" href="wannabe://task">Open in Wanna Be</a><a id="calendar-jump" class="text-link" href="#calendar-options">Choose a calendar time <span aria-hidden="true">↓</span></a></div><p id="app-version-note" class="hint action-hint">The iPhone or iPad app lets you review and add this to your tasks. It needs a version with task sharing.</p></div>
+<div id="sender-actions" hidden><div class="actions"><button id="share-task" class="button" type="button">Save task file</button><button id="save-task-file" class="secondary-button" type="button" hidden>Save file</button><button id="copy-task" class="text-button" type="button">Copy web link</button><button id="edit-task" class="text-button" type="button">Edit</button></div><p class="hint action-hint">Send the named .wannabetask file in a message. The other person can open it in the app or review it on this page.</p></div>
+<div id="recipient-actions" hidden><div class="actions"><a id="open-app" class="button" href="wannabe://task">Open in Wanna Be</a><button id="save-received-file" class="secondary-button" type="button">Save task file</button><a id="calendar-jump" class="text-link" href="#calendar-options">Choose a calendar time <span aria-hidden="true">↓</span></a></div><p id="app-version-note" class="hint action-hint">Open this in the latest iPhone, iPad, or Android app to review and add it. Nothing is added automatically.</p></div>
 <button id="copy-details" class="text-button" type="button">Copy task details</button><div id="details-fallback" class="field" hidden><label for="task-details-text">Task details</label><textarea id="task-details-text" rows="6" readonly></textarea><p class="hint">Select the details and copy them.</p></div>
 <div id="copy-fallback" class="field" hidden><label for="task-link">Task link</label><textarea id="task-link" rows="3" readonly spellcheck="false"></textarea><p class="hint">Select the link and copy it.</p></div>
-<p id="long-link-note" class="hint" hidden>This is a long link. Some messaging apps may shorten it.</p>
+<p id="long-link-note" class="hint" hidden>Large tasks make long web links. Sending the task file keeps the message easier to read.</p>
 </section>
 <section id="calendar-options" class="task-card" aria-labelledby="calendar-title" hidden>
 <h2 id="calendar-title">Choose a time.</h2><p id="calendar-intro" class="hint">Make a calendar copy on your terms. The task link stays the same.</p>
@@ -66,8 +68,8 @@
 <p class="hint action-hint">Open the .ics file in a calendar app that supports it, then review and save. Set reminders in your calendar. This page does not send reminders or track completion.</p>
 <details class="task-details"><summary>Using Google Calendar?</summary><div class="details-content"><p>Google Calendar imports .ics files on a computer. Save the file, then open Settings → Import &amp; export at Google Calendar on your computer. <a href="https://support.google.com/calendar/answer/37118" target="_blank" rel="noopener noreferrer">Google’s import instructions</a>.</p><p>On a phone, use Copy task details above and create an event in your calendar instead.</p></div></details>
 </section>
-<div class="task-bottom"><p class="hint">No account needed. Task details are inside the link; anyone who has it can read them. Share only what you mean to share. <a href="privacy.html#sharing">How sharing works</a>.</p><button id="new-task" class="text-button" type="button" hidden>Create another task</button></div>
+<div class="task-bottom"><p class="hint">No account needed. Anyone with the file or link can read the task. You each keep your own copy; completion is not shared. <a href="privacy.html#sharing">How sharing works</a>.</p><button id="new-task" class="text-button" type="button" hidden>Create another task</button></div>
 </main>
-<footer class="site-footer"><div class="footer-inner shell"><p>© 2026 Zesty Fernandez · Where You Wanna Be</p><div class="footer-links"><a href="./">Support</a><a href="privacy.html">Privacy policy</a><a href="mailto:ZestyTS@gmail.com">Email</a></div></div></footer>
+<footer class="site-footer"><div class="footer-inner shell"><p>© 2026 Zesty Fernandez</p><div class="footer-links"><a href="./">Support</a><a href="privacy.html">Privacy policy</a><a href="mailto:ZestyTS@gmail.com">Email</a></div></div></footer>
 </body>
 </html>

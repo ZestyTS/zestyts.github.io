@@ -7,6 +7,7 @@
   "use strict";
   const BASE = "https://zestyts.github.io/where-you-wanna-be/task.html";
   const MAX_JSON_BYTES = 16384;
+  const fileMIME = "application/vnd.zestyts.wannabe-task+json";
   const MAX_ENCODED = 24576;
   const MAX_ITEMS = 200;
   const MAX_DEPTH = 10;
@@ -172,6 +173,27 @@
     if (btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "") !== encoded) fail("This task link is not valid.");
     return validate(parsed);
   }
+  function fileData(value) {
+    return encoder.encode(JSON.stringify(validate(value)));
+  }
+  function fromFileData(value) {
+    let bytes;
+    if (ArrayBuffer.isView(value)) bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+    else if (value instanceof ArrayBuffer) bytes = new Uint8Array(value);
+    else fail("This task file is not valid.");
+    if (!bytes.length || bytes.length > MAX_JSON_BYTES) fail("Use a task file no larger than 16 KB.");
+    if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) fail("Use a UTF-8 task file without a byte-order mark.");
+    let parsed;
+    try { parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
+    catch { fail("This task file is not valid UTF-8 task JSON."); }
+    try { return validate(parsed); }
+    catch (error) { fail(error.message.replace(/task link/g, "task file")); }
+  }
+  function fileName(value) {
+    const task = validate(value);
+    const name = task.title.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/g, "");
+    return `${name || "task"}.wannabetask`;
+  }
   function fromLink(link) {
     const url = new URL(link);
     if (url.protocol !== "https:" || url.hostname !== "zestyts.github.io" || url.pathname !== "/where-you-wanna-be/task.html" || url.search || url.username || url.password || url.port) fail("Use a Wanna Be task link.");
@@ -225,5 +247,5 @@
     if (localDay(result) !== day || result.getHours() !== hours || result.getMinutes() !== minutes) fail("That time does not exist in your time zone. Choose another time.");
     return result;
   }
-  return Object.freeze({ validate, sameContent, encode, decode, fromLink, link, appLink, rows, plainText, calendarTask, calendarFile, escapeCalendarText, foldLine, localStart, localDay, count });
+  return Object.freeze({ validate, sameContent, encode, decode, fromLink, link, appLink, fileData, fromFileData, fileName, fileMIME, rows, plainText, calendarTask, calendarFile, escapeCalendarText, foldLine, localStart, localDay, count });
 });
