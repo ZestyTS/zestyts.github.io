@@ -101,4 +101,15 @@ test("shared Core v2 interoperability fixture accepts seconds and Foundation fra
   fixture.subtasks[1].start = "2026-10-07T09:00:00.000Z";
   assert.equal(task.decode(raw(fixture)).subtasks[1].start, fixture.subtasks[1].start);
 });
+test("named v1 attachment and existing web link carry the same identity and fields", () => { const data = task.fileData(sample); assert.deepEqual(task.fromFileData(data), task.fromLink(task.link(sample))); assert.equal(task.fileName(sample), "put-the-laundry-away.wannabetask"); assert.equal(task.fileMIME, "application/vnd.zestyts.wannabe-task+json"); });
+test("v2 attachment keeps the whole branch, ordering and Unicode as raw task JSON", () => { const value = editedBranch(b => b.subtasks[1].title = "Read 📚 — café e\u0301"); const bytes = task.fileData(value); assert.equal(bytes[0], 123); assert.deepEqual(JSON.parse(new TextDecoder().decode(bytes)), task.fromFileData(bytes)); assert.deepEqual(task.fromFileData(bytes), task.fromLink(task.link(value))); });
+test("ten-level attachment accepts without flattening its parent relationships", () => { const decoded = task.fromFileData(task.fileData(chain(10))); assert.equal(task.rows(decoded).at(-1).depth, 10); });
+test("attachment filename cannot contain a path, URL or executable suffix", () => { assert.equal(task.fileName({ ...sample, title: "../../résumé / notes? <script>.exe" }), "resume-notes-script-exe.wannabetask"); assert.equal(task.fileName({ ...sample, title: "📚 日本語" }), "task.wannabetask"); });
+test("attachment accepts exactly16KiB and rejects raw padding one byte over", () => { const rawBytes = Buffer.from(JSON.stringify(task.validate(sample))); const exact = Buffer.concat([rawBytes, Buffer.alloc(16384 - rawBytes.length, 32)]); assert.equal(task.fromFileData(exact).id, sample.id.toLowerCase()); assert.throws(() => task.fromFileData(Buffer.concat([exact, Buffer.from(" ")])), /16 KB/); });
+for (const [name, bytes] of [
+  ["empty", new Uint8Array()], ["invalid UTF8", Uint8Array.from([0xc3, 0x28])], ["UTF8 BOM", Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(JSON.stringify(sample))])],
+  ["UTF16 JSON", Buffer.from(JSON.stringify(sample), "utf16le")], ["not JSON", Buffer.from("<html>not a task</html>")], ["array root", Buffer.from(JSON.stringify([sample]))],
+  ["unknown field", Buffer.from(JSON.stringify({ ...sample, completed: true }))], ["unsupported version", Buffer.from(JSON.stringify({ ...sample, v: 3 }))], ["eleventh level", Buffer.from(JSON.stringify(chain(11)))]
+]) test(`reject malformed attachment ${name}`, () => assert.throws(() => task.fromFileData(bytes)));
+test("attachment decoder accepts an ArrayBuffer without reading unrelated bytes", () => { const bytes = task.fileData(sample); assert.deepEqual(task.fromFileData(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)), task.validate(sample)); const padded = new Uint8Array(bytes.length + 4); padded.set(bytes, 2); assert.deepEqual(task.fromFileData(padded.subarray(2, -2)), task.validate(sample)); });
 console.log(`${checks} task codec/calendar checks passed.`);

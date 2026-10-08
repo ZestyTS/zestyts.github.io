@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { File } = require("node:buffer");
 const api = require("../task-core.js");
 const html = fs.readFileSync(path.join(__dirname, "../task.html"), "utf8");
 const source = fs.readFileSync(path.join(__dirname, "../task.js"), "utf8");
@@ -31,10 +32,14 @@ class Element {
   reportValidity() { return !this.validityMessage; }
   remove() {}
 }
-function page(payload, hash = payload ? `#task=${api.encode(payload)}` : "") {
+function page(payload, hash = payload ? `#task=${api.encode(payload)}` : "", browser = {}) {
   const identifiers = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(new Set(identifiers).size, identifiers.length, "HTML identifiers are unique.");
   const elements = new Map(identifiers.map(identifier => [identifier, new Element("div", identifier)]));
+  for (const [identifier, element] of elements) {
+    const tag = html.match(new RegExp(`<[^>]+\\bid="${identifier}"[^>]*>`))[0];
+    element.hidden = /\bhidden(?:\s|>|=)/.test(tag);
+  }
   const get = identifier => { assert.ok(elements.has(identifier), `Element ${identifier} is declared in task.html.`); return elements.get(identifier); };
   for (const name of ["first-step-preview", "smaller-step-preview"]) get(name).append(new Element("h3"), new Element("p"));
   get("steps-preview").append(new Element("h3"), new Element("ol"));
@@ -43,10 +48,10 @@ function page(payload, hash = payload ? `#task=${api.encode(payload)}` : "") {
   const skip = new Element("a"), calendarJump = get("calendar-jump"); skip.attributes.href = "#main"; calendarJump.attributes.href = "#calendar-options";
   const location = { hash, pathname: "/where-you-wanna-be/task.html", search: "" }, downloads = [], blobs = [], events = new Map();
   const document = { getElementById: get, createElement: tag => { const element = new Element(tag); if (tag === "a") element.click = () => downloads.push(element.download); return element; }, body: new Element("body"), querySelectorAll: () => [skip, calendarJump], querySelector: selector => get(selector.slice(1)) };
-  const context = { document, location, history: { replaceState() { location.hash = ""; } }, navigator: {}, crypto: { randomUUID: () => id(100 + blobs.length + downloads.length + ++context.uuidSequence) }, uuidSequence: 0, Intl, Date, Blob, URL: { createObjectURL(blob) { blobs.push(blob); return "blob:local-fixture"; }, revokeObjectURL() {} }, setTimeout() {} };
+  const context = { document, location, history: { replaceState() { location.hash = ""; } }, navigator: browser, crypto: { randomUUID: () => id(100 + blobs.length + downloads.length + ++context.uuidSequence) }, uuidSequence: 0, Intl, Date, Blob, File, URL: { createObjectURL(blob) { blobs.push(blob); return "blob:local-fixture"; }, revokeObjectURL() {} }, setTimeout() {} };
   context.window = { WannaBeTask: api, isSecureContext: true, addEventListener(type, action) { events.set(type, action); } };
   vm.runInNewContext(source, context, { filename: "task.js" });
-  return { get, location, downloads, blobs, skip, events };
+  return { get, location, downloads, blobs, skip, events, async selectFile(file) { get("task-file-input").files = file ? [file] : []; await get("task-file-input").emit("change"); } };
 }
 let checks = 0;
 async function test(name, action) { await action(); checks++; process.stdout.write(`✓ ${name}\n`); }
@@ -71,5 +76,54 @@ async function test(name, action) { await action(); checks++; process.stdout.wri
   await test("malformed branch link returns readable error without Calendar controls", () => { const p = page(null, "#task=bad!"); assert.equal(p.get("review").hidden, true); assert.equal(p.get("calendar-options").hidden, true); assert.match(p.get("message").textContent, /incomplete/); });
   await test("existing v1 composer still creates stable snapshots and renews edited identity", async () => { const p = page(null); p.get("task-title").value = "Read a chapter"; await p.get("task-form").emit("submit"); const first = api.fromLink(p.get("task-link").value); assert.equal(first.v, 1); assert.equal(first.day, undefined); await p.get("edit-task").emit("click"); await p.get("task-form").emit("submit"); assert.equal(api.fromLink(p.get("task-link").value).id, first.id); await p.get("edit-task").emit("click"); p.get("task-title").value = "Paint one flower"; await p.get("task-form").emit("submit"); assert.notEqual(api.fromLink(p.get("task-link").value).id, first.id); });
   await test("sender exact-time choice also leaves its day explicitly unset", async () => { const p = page(null); p.get("suggest-time").checked = true; await p.get("suggest-time").emit("change"); assert.equal(p.get("suggested-day").value, ""); assert.equal(p.get("suggested-day").required, true); });
+  await test("default sender saves a named raw task attachment and keeps web-link identity", async () => {
+    const p = page(null); p.get("task-title").value = "Read a chapter"; await p.get("task-form").emit("submit");
+    assert.equal(p.get("share-task").textContent, "Save task file"); assert.equal(p.get("save-task-file").hidden, true);
+    await p.get("share-task").emit("click"); assert.deepEqual(p.downloads, ["read-a-chapter.wannabetask"]); assert.equal(p.blobs[0].type, api.fileMIME);
+    assert.deepEqual(api.fromFileData(await p.blobs[0].arrayBuffer()), api.fromLink(p.get("task-link").value)); assert.equal(p.get("copy-fallback").hidden, true);
+  });
+  await test("file-capable share uses a named file without exposing a long URL", async () => {
+    const shares = [], p = page(null, "", { canShare: request => Boolean(request.files && request.files.length === 1), async share(request) { shares.push(request); } });
+    p.get("task-title").value = "Read a chapter"; await p.get("task-form").emit("submit"); assert.equal(p.get("share-task").textContent, "Share task file");
+    await p.get("share-task").emit("click"); assert.equal(shares.length, 1); assert.equal(shares[0].url, undefined); assert.equal(shares[0].files[0].name, "read-a-chapter.wannabetask");
+    assert.equal(shares[0].files[0].type, api.fileMIME); assert.deepEqual(api.fromFileData(await shares[0].files[0].arrayBuffer()), api.fromLink(p.get("task-link").value)); assert.equal(p.downloads.length, 0);
+  });
+  await test("cancelled share performs no download or link-copy fallback", async () => {
+    const p = page(null, "", { canShare: () => true, async share() { throw Object.assign(new Error("Cancelled"), { name: "AbortError" }); } });
+    p.get("task-title").value = "Read a chapter"; await p.get("task-form").emit("submit"); await p.get("share-task").emit("click"); assert.equal(p.downloads.length, 0); assert.equal(p.get("copy-fallback").hidden, true);
+  });
+  await test("unsupported share saves the attachment rather than silently copying the long URL", async () => {
+    const p = page(null, "", { canShare: () => true, async share() { throw new Error("Unavailable"); } });
+    p.get("task-title").value = "Read a chapter"; await p.get("task-form").emit("submit"); await p.get("share-task").emit("click"); assert.equal(p.downloads.length, 1); assert.equal(p.get("copy-fallback").hidden, true); assert.match(p.get("message").textContent, /ready to attach/);
+  });
+  await test("opening a named task file reviews locally without adding or downloading anything", async () => {
+    const p = page(null); await p.selectFile(new File([api.fileData(leaf)], "drink-water.wannabetask", { type: api.fileMIME }));
+    assert.equal(p.get("review").hidden, false); assert.equal(p.get("recipient-actions").hidden, false); assert.equal(p.get("sender-actions").hidden, true); assert.equal(p.get("task-heading").textContent, leaf.title);
+    assert.equal(p.get("calendar-day").value, ""); assert.equal(p.get("calendar-time").value, ""); assert.equal(p.downloads.length, 0); assert.equal(p.location.hash, "");
+  });
+  await test("whole-group attachment has the same parent-aware review and selected-leaf Calendar rule", async () => {
+    const p = page(null); await p.selectFile(new File([api.fileData(branch)], "prepare-day.wannabetask"));
+    assert.equal(p.get("branch-list").children.length, 3); assert.match(p.get("branch-list").children[1].children[1].textContent, /Level 3 · Part of Get ready/); assert.equal(p.get("calendar-download").disabled, true); assert.equal(p.downloads.length, 0);
+    await p.get("save-received-file").emit("click"); assert.deepEqual(api.fromFileData(await p.blobs[0].arrayBuffer()), api.validate(branch));
+  });
+  await test("a task file cannot replace an unsent draft without an explicit choice", async () => {
+    const p = page(null); p.get("task-title").value = "My own draft"; await p.selectFile(new File([api.fileData(leaf)], "task.wannabetask"));
+    assert.equal(p.get("file-replace").hidden, false); assert.equal(p.get("composer").hidden, false); assert.equal(p.get("review").hidden, true); assert.equal(p.get("task-title").value, "My own draft");
+    await p.get("keep-draft").emit("click"); assert.equal(p.get("file-replace").hidden, true); assert.equal(p.get("task-title").value, "My own draft");
+    await p.selectFile(new File([api.fileData(leaf)], "task.wannabetask")); await p.get("review-task-file").emit("click"); assert.equal(p.get("task-heading").textContent, leaf.title); assert.equal(p.downloads.length, 0);
+  });
+  await test("oversized files are rejected before reading bytes and preserve the draft", async () => {
+    const p = page(null); p.get("task-title").value = "Keep this"; let read = false;
+    await p.selectFile({ size: 16385, async arrayBuffer() { read = true; throw new Error("Should not read"); } });
+    assert.equal(read, false); assert.match(p.get("message").textContent, /16 KB/); assert.equal(p.get("task-title").value, "Keep this"); assert.equal(p.get("review").hidden, true);
+  });
+  await test("malformed UTF8 file leaves the composer with a readable error", async () => {
+    const p = page(null); await p.selectFile(new File([Uint8Array.from([0xc3, 0x28])], "bad.wannabetask")); assert.match(p.get("message").textContent, /UTF-8/); assert.equal(p.get("composer").hidden, false); assert.equal(p.downloads.length, 0);
+  });
+  await test("a slower earlier file selection cannot replace the newer reviewed file", async () => {
+    const p = page(null); let resolve; const delayed = new Promise(done => resolve = done), first = p.selectFile({ size: api.fileData(leaf).length, arrayBuffer: () => delayed });
+    const later = { ...leaf, id: id(900), title: "Later selection" }; await p.selectFile(new File([api.fileData(later)], "later.wannabetask")); resolve(api.fileData(leaf).buffer); await first;
+    assert.equal(p.get("task-heading").textContent, later.title); await p.get("save-received-file").emit("click"); assert.equal(api.fromFileData(await p.blobs[0].arrayBuffer()).id, later.id);
+  });
   console.log(`${checks} task page DOM-flow checks passed.`);
 })().catch(error => { console.error(error); process.exitCode = 1; });
