@@ -125,5 +125,13 @@ async function test(name, action) { await action(); checks++; process.stdout.wri
     const later = { ...leaf, id: id(900), title: "Later selection" }; await p.selectFile(new File([api.fileData(later)], "later.wannabetask")); resolve(api.fileData(leaf).buffer); await first;
     assert.equal(p.get("task-heading").textContent, later.title); await p.get("save-received-file").emit("click"); assert.equal(api.fromFileData(await p.blobs[0].arrayBuffer()).id, later.id);
   });
+  await test("a pending file cannot replace the user's newer reviewed draft", async () => {
+    const p = page(null); let resolve; const bytes = api.fileData(leaf), delayed = new Promise(done => resolve = done);
+    const earlier = p.selectFile({ size: bytes.length, arrayBuffer: () => delayed });
+    p.get("task-title").value = "My own reviewed task"; await p.get("task-form").emit("submit");
+    const reviewed = api.fromLink(p.get("task-link").value); resolve(bytes.buffer); await earlier;
+    assert.equal(p.get("task-heading").textContent, reviewed.title); assert.deepEqual(api.fromLink(p.get("task-link").value), reviewed);
+    assert.equal(p.get("sender-actions").hidden, false); assert.equal(p.get("recipient-actions").hidden, true); assert.equal(p.downloads.length, 0);
+  });
   console.log(`${checks} task page DOM-flow checks passed.`);
 })().catch(error => { console.error(error); process.exitCode = 1; });
