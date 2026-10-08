@@ -93,6 +93,8 @@
     // An undated task stays blank. No default today/time or calendar write.
   }
   function review(task, sender, focus) {
+    // A finished review supersedes any earlier file read that is still pending.
+    fileReadSequence++;
     current = task; madeHere = sender;
     byID("composer").hidden = true; byID("review").hidden = false;
     byID("file-entry").hidden = true; byID("file-replace").hidden = true; pendingFile = null;
