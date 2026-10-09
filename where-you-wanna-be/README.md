@@ -12,13 +12,17 @@ Keep these URLs stable because the apps and App Store listing use them. All thre
 
 ## Native sharing and browser fallback
 
-Sharing starts in the app with **Today → Send a task**. A recipient can open a `.wannabetask` attachment with Wanna Be or use **Today → Import task**. The website is a fallback for people without the app and supports local composition or review; it is not a required step between apps.
+Sharing starts on a saved task with **Share**, or through the composition tool in **Today → All tasks**. A recipient can open a `.wannabetask` attachment with Wanna Be or use **Today → All tasks → Import task**. The website is a fallback for people without the app and supports local composition or review; it is not a required step between apps.
 
 The default browser share is a named `.wannabetask` file. Web links remain available as an explicit alternative. Version 1 contains a single task; version 2 contains a bigger task and its independent subtasks, preserving up to ten levels. Both formats are bounded to 16 KiB of strict UTF-8 JSON. Completion, reminders, history, and unrelated tasks do not transfer. Recipients review a separate copy; later changes do not sync.
 
 Task details stay in the browser: no task backend, inbox, accounts, analytics, cookies, remote task requests, or browser persistence. Link details are in a `#task=` Base64URL fragment, which is not sent to GitHub Pages in a page request. Anyone with the file or link can read its contents. The task page has a restrictive Content Security Policy and no-referrer policy.
 
 The explicit `wannabe://task?data=` link offers app handoff for browser review. Calendar export requires the recipient to choose a day and time; a group also requires one individual subtask. The `.ics` file contains no attendees or automatic alarms. Calendar applications handle review, import, and reminders. Google Calendar documents `.ics` import on a computer; copying details is available for manual mobile entry.
+
+## Consolidation copy — October 9, 2026
+
+The support page follows the current source vocabulary: Help me start / Plan my day, Wheel / Today, Doing now, All tasks, Use once today, and Change my plan. It preserves recipient review, separate Calendar copies, private return notes and platform-specific app pause. Matching app beta availability is recorded separately in the platform release records; website wording alone does not establish that a build is available to testers.
 
 ## Validation and preview
 
