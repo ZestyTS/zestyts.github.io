@@ -10,6 +10,14 @@ Product information, support, privacy, and browser task tools for Wanna Be on iP
 
 Keep these URLs stable because the apps and App Store listing use them. All three pages use the site-wide `../styles.css`, global ZestyTS navigation, and the product navigation. Product-specific styles extend the shared stylesheet rather than copying a separate color palette. The homepage project list, privacy index, and sitemap link back to this product.
 
+## Current testing and release boundary — November 19, 2026
+
+There is no public store release. iOS **0.13.1 (37)** is processed and staged with Lifetime Upgrade in one manual-release App Review draft; it has not been submitted for public review. Android **0.14.1 (10)** is available in the restricted Google Play internal test for eligible invited accounts. Store availability is not proof of an owner's installation or completed checkout.
+
+The current Google Play build offers free essentials and an optional one-time Lifetime Upgrade, with a US$4.99 base price. Older private Android APKs preview upgrade extras without Google Play purchases. Purchases are specific to each platform. The public FAQ distinguishes these builds without exposing private tester addresses, invitations, or reviewer codes.
+
+Use the dated workspace record `release-preparation-20261119/RELEASE-STATUS.json` for current build evidence and remaining owner steps. This documentation update does not change app versions, store releases, or the published privacy policy. Preserve earlier publication receipts and unrelated working-tree edits when publishing a reviewed patch.
+
 ## Native sharing and browser fallback
 
 Sharing starts on a saved task with **Share**, or through the composition tool in **Today → All tasks**. A recipient can open a `.wannabetask` attachment with Wanna Be or use **Today → All tasks → Import task**. The website is a fallback for people without the app and supports local composition or review; it is not a required step between apps.
